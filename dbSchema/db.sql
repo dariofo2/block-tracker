@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS transactions (
     block VARCHAR(256),
     hash VARCHAR(256),
     isErc20 TINYINT,
-    contract_address varchar(256),
+    contractAddress varchar(256),
     date INT,
     FOREIGN KEY (accountId) REFERENCES accounts (id)
 );

@@ -3,10 +3,22 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { Web3Service } from './web3/web3.service';
 import { Web3Module } from './web3/web3.module';
+import { ConfigModule } from '@nestjs/config';
+import { DBModule } from './db/db.module';
+import { AccountsModule } from './controllers/accounts/accounts.module';
+import { TransactionsModule } from './controllers/transactions/transactions.module';
 
 @Module({
-  imports: [Web3Module],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    Web3Module,
+    DBModule,
+    AccountsModule,
+    TransactionsModule
+  ],
   controllers: [AppController],
-  providers: [AppService, Web3Service],
+  providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
