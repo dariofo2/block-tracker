@@ -18,7 +18,7 @@ export class TransactionsService {
   ) {}
 
   async create(transactions: Transaction|Transaction[]) {
-
+    return await this.transactionsRepository.create(transactions);
   }
   async list() :Promise<Transaction[]> {
     return await this.transactionsRepository.list();
@@ -34,7 +34,7 @@ export class TransactionsService {
    */
   async getTransactionsOfAccount () {
     if (this.lastBlockUsed!="") {
-      
+
     } else {
 
     }
