@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { CreateTransactionDto } from "src/controllers/transactions/dto/create-transaction.dto";
 import { Transaction } from "src/controllers/transactions/entities/transaction.entity";
 import { DataSource, Equal, Repository } from "typeorm";
 
@@ -11,8 +12,8 @@ export class TransactionsRepository {
         private transactionRepository: Repository<Transaction>
     ) {}
     
-    async create (transactions: Transaction|Transaction[]) : Promise<Transaction|Transaction[]> {
-        if (transactions instanceof Transaction) {
+    async create (transactions: CreateTransactionDto|CreateTransactionDto[]) : Promise<Transaction|Transaction[]> {
+        if (transactions instanceof CreateTransactionDto) {
             return await this.transactionRepository.save(transactions);
         } else {
             return await this.transactionRepository.save(transactions);

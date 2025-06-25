@@ -1,6 +1,4 @@
 export class CreateTransactionDto {
-        accountId: number;
-        
         fromAcc: string;
     
         toAcc: string;
@@ -16,5 +14,9 @@ export class CreateTransactionDto {
         contractAddress: string;
     
         date: number;
+
+        account: {
+                id: number
+        };
         
 }

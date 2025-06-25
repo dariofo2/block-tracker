@@ -21,7 +21,7 @@ export class AccountsService {
     const newAccount=plainToClass(Account,createAccountDto);
     const accountCreated=await this.accountsRepository.create(newAccount);
 
-    await this.transactionsService.getTransactionsOfAccount(accountCreated.address);
+    //await this.transactionsService.getTransactionsOfAccount(accountCreated.address);
     return accountCreated; 
   }
 

@@ -4,6 +4,7 @@ import GetTransactionsDTO from "./dto/get-etherscan-transactions.dto";
 import { lastValueFrom } from "rxjs";
 import { Transaction } from "web3";
 import ResponseEtherscanTransactionsDTO from "./dto/response-etherscan-transactions.dto";
+import TransactionEtherscanDTO from "./dto/transaction-etherscan.dto";
 
 @Injectable()
 export default class AxiosService {
@@ -16,7 +17,7 @@ export default class AxiosService {
     /**
      * Gets Transactions from Account
      */
-    async getTransactionsOfAccount (getTransactionsDTO: GetTransactionsDTO) : Promise<Transaction[]|null> {
+    async getTransactionsOfAccount (getTransactionsDTO: GetTransactionsDTO) : Promise<TransactionEtherscanDTO[]|null> {
         try {
         const transactions=await lastValueFrom (this.axios.get<ResponseEtherscanTransactionsDTO>(
             this.etherscanURL,
