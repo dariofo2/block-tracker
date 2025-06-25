@@ -7,7 +7,7 @@ export class Account {
     id: number;
 
     @Column()
-    account: string;
+    address: string;
 
     @OneToMany(type=>Transaction,transaction=>transaction.id)
     transactions: Transaction[]

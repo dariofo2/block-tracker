@@ -4,6 +4,7 @@ import AxiosService from "./axios.service";
 
 @Module({
     imports: [HttpModule],
-    providers: [AxiosService]
+    providers: [AxiosService],
+    exports: [AxiosService]
 })
 export default class AxiosModule {}

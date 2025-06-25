@@ -8,6 +8,7 @@ import { DBModule } from './database/db.module';
 import { AccountsModule } from './controllers/accounts/accounts.module';
 import { TransactionsModule } from './controllers/transactions/transactions.module';
 import BullMQModule from './bullMQ/bullMQ.module';
+import AxiosModule from './axios/axios.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import BullMQModule from './bullMQ/bullMQ.module';
     Web3Module,
     DBModule,
     BullMQModule,
+    AxiosModule,
     AccountsModule,
     TransactionsModule
   ],

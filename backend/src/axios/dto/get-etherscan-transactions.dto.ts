@@ -1,5 +1,5 @@
 export default class GetEtherscanTransactionsDTO {
-    address: number;
+    address: string;
     startblock: number;
     endblock: number;
     page: number;
