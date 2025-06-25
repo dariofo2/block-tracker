@@ -1,4 +1,4 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { BadRequestException, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { DataSource } from 'typeorm';
@@ -16,7 +16,7 @@ import TransactionEtherscanDTO from 'src/axios/dto/transaction-etherscan.dto';
 @Injectable()
 export class TransactionsService implements OnApplicationBootstrap {
   private lastBlockUsed: number = 0
-
+  
   constructor(
     private accountsRepository: AccountsRepository,
     private transactionsRepository: TransactionsRepository,
@@ -37,7 +37,7 @@ export class TransactionsService implements OnApplicationBootstrap {
   }
 
   onApplicationBootstrap() {
-    this.initializeAppRefreshLoop();  
+    this.initializeAppRefreshLoop();
   }
 
   /**
@@ -53,6 +53,7 @@ export class TransactionsService implements OnApplicationBootstrap {
    * Get Transactions of Account until Last Block Used
    * If no blocks used, it starts to Last Block - 1
    */
+  /* NOT NEEDED
   async getTransactionsOfAccount(address: string) {
     const blocksToPast = parseInt(process.env.PAST_TRANSACTIONS_BLOCKS as string);
     if (this.lastBlockUsed <= 0) {
@@ -76,14 +77,16 @@ export class TransactionsService implements OnApplicationBootstrap {
     const transactionsResponse = await this.axiosService.getTransactionsOfAccount(GetEtherscanTransactionsDTO);
     console.log(transactionsResponse);
   }
-
+  */
   /**
    * Refresh new Transactions of All accounts from last Block Used By Account to -> Last Block in Blockchain -1
    * If Account has 0 Transactions in DB, it gets last Block in Blockchain - process.env.past_Blocks
    */
   async refreshNewTransactionsOfAccounts() {
+    //Get Accounts with lastTransactionBlock
     const accounts = await this.accountsRepository.listWithLastTransactionBlock();
 
+    //Get Ethereum Blockchain Last Block
     const lastBlockchainBlock = parseInt((await this.web3Service.node.eth.getBlockNumber()).toString());
 
     let axiosPromises: Promise<TransactionEtherscanDTO[] | null>[] = [];
@@ -101,7 +104,7 @@ export class TransactionsService implements OnApplicationBootstrap {
           startBlock = parseInt(account.lastBlockNumber) + 1;
         }
 
-        // Makes The Request
+        // Makes The Request to Etherscan
         const GetEtherscanTransactionsDTO: GetEtherscanTransactionsDTO = {
           address: account.address,
           startblock: startBlock,
@@ -113,41 +116,72 @@ export class TransactionsService implements OnApplicationBootstrap {
           module: "account"
         };
 
-        console.log(GetEtherscanTransactionsDTO);
+        //Create Promise and add To Promise Array to later do Promise.all
         const transactionsResponsePromise = this.axiosService.getTransactionsOfAccount(GetEtherscanTransactionsDTO);
         axiosPromises.push(transactionsResponsePromise);
-
-        //if (transactionsResponse) this.create(transactionsResponse)
       }
 
+      const responses = await Promise.all(axiosPromises);
 
-      const responses=await Promise.all(axiosPromises); 
+      // Create Transactions From etherscan to DB Block
+
+      const createTransactions: CreateTransactionDto[] = [];
       
-      // Create Transactions
-      const createTransactions:CreateTransactionDto[]=[];
+      //For each Account Etherscan AxiosResponse
       for (let i = 0; i < responses.length; i++) {
         const accountNewTxs = responses[i] as TransactionEtherscanDTO[];
-        
+
+        //For Each Transaction
         for (let z = 0; z < accountNewTxs.length; z++) {
           const tx = accountNewTxs[z];
-          const from=tx.from as string;
-          createTransactions.push({
-            account: {
-              id:accounts[i].id
-            },
-            fromAcc:tx.from,
-            toAcc: tx.to,
-            value: tx.value,
-            block: tx.blockNumber,
-            hash: tx.blockHash,
-            isErc20:false,
-            contractAddress:tx.contractAddress,
-            date:parseInt(tx.timeStamp)
-          })
+
+          //input field is from Sending to a Contract, so is an ERC-20
+          if (tx.input.length >= 6) {
+            //Decode Method and Parameters of tx.input (data)
+            const methodDecoded=await this.web3Service.decodeMethodDataERC20(tx.input);
+            // Get ERC20 Data
+            const ERC20Data= await this.web3Service.getDataOfERC20Token(tx.to);
+
+            console.log(ERC20Data);
+
+            throw new BadRequestException("");
+            //Get the Name and Decimals of the ERC-20
+            createTransactions.push({
+              account: {
+                id: accounts[i].id
+              },
+              fromAcc: tx.from,
+              toAcc: tx.to,
+              value: methodDecoded[1],
+              block: tx.blockNumber,
+              hash: tx.blockHash,
+              isErc20: true,
+              contractAddress: tx.to,
+              date: parseInt(tx.timeStamp)
+            })
+            //Normal Transaction
+          } else {
+            createTransactions.push({
+              account: {
+                id: accounts[i].id
+              },
+              fromAcc: tx.from,
+              toAcc: tx.to,
+              value: tx.value,
+              block: tx.blockNumber,
+              hash: tx.blockHash,
+              isErc20: false,
+              contractAddress: tx.contractAddress,
+              date: parseInt(tx.timeStamp)
+            })
+          }
+
         }
       }
 
       console.log(createTransactions);
+
+      // Save Transactions to DB
       this.create(createTransactions);
     }
   }
