@@ -10,5 +10,6 @@ import AxiosModule from 'src/axios/axios.module';
   imports: [DBModule,Web3Module,AxiosModule],
   controllers: [TransactionsController],
   providers: [TransactionsService],
+  exports: [TransactionsService]
 })
 export class TransactionsModule {}

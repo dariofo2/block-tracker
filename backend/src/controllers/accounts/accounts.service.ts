@@ -8,16 +8,21 @@ import { AccountsRepository } from 'src/database/repository/accounts/accounts.re
 import { Transaction } from '../transactions/entities/transaction.entity';
 import { TransactionsRepository } from 'src/database/repository/transactions/transactions.repository';
 import { plainToClass } from 'class-transformer';
+import { TransactionsService } from '../transactions/transactions.service';
 
 @Injectable()
 export class AccountsService {
   constructor (
         private accountsRepository: AccountsRepository,
+        private transactionsService: TransactionsService,
         private transactionsRepository: TransactionsRepository
   ) {}
   async create(createAccountDto: CreateAccountDto) {
     const newAccount=plainToClass(Account,createAccountDto);
-    return await this.accountsRepository.create(newAccount);
+    const accountCreated=await this.accountsRepository.create(newAccount);
+
+    await this.transactionsService.getTransactionsOfAccount(accountCreated.address);
+    return accountCreated; 
   }
 
   async list() {

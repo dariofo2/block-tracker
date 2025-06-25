@@ -12,9 +12,9 @@ export class AccountsRepository {
         private accountsRepository: Repository<Account>
     ) {}
 
-    async create (newAccount: Account) {
+    async create (newAccount: Account) : Promise<Account> {
         try {
-        await this.accountsRepository.save(newAccount);
+        return await this.accountsRepository.save(newAccount);
         } catch (error) {
             console.error(error);
             throw new BadRequestException("Error on Adding to Database");

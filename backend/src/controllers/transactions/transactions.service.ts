@@ -57,7 +57,7 @@ export class TransactionsService {
       module: "account"
     };
 
-    const transactionsResponse=this.axiosService.getTransactionsOfAccount(GetEtherscanTransactionsDTO);
+    const transactionsResponse=await this.axiosService.getTransactionsOfAccount(GetEtherscanTransactionsDTO);
     console.log(transactionsResponse);
   }
 
