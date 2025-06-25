@@ -28,6 +28,18 @@ export class Transaction {
     contractAddress: string;
 
     @Column()
+    method: string;
+
+    @Column()
+    name: string;
+
+    @Column()
+    symbol: string;
+
+    @Column()
+    decimals: string;
+
+    @Column()
     date: number;
     
     @ManyToOne(type=>Account,account=>account.id)

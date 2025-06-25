@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 
 CREATE TABLE IF NOT EXISTS transactions (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    accountId INT,
+    accountId INT NOT NULL,
     fromAcc VARCHAR(256) NOT NULL,
     toAcc VARCHAR(256) NOT NULL,
     value INT NOT NULL,
@@ -15,6 +15,10 @@ CREATE TABLE IF NOT EXISTS transactions (
     hash VARCHAR(256),
     isErc20 TINYINT,
     contractAddress varchar(256),
+    methodName varchar(256),
+    name varchar(256),
+    symbol varchar(256),
+    decimals varchar(256),
     date INT,
     FOREIGN KEY (accountId) REFERENCES accounts (id) ON DELETE CASCADE
 );

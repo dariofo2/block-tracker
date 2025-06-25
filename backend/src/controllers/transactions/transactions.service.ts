@@ -16,7 +16,7 @@ import TransactionEtherscanDTO from 'src/axios/dto/transaction-etherscan.dto';
 @Injectable()
 export class TransactionsService implements OnApplicationBootstrap {
   private lastBlockUsed: number = 0
-  
+
   constructor(
     private accountsRepository: AccountsRepository,
     private transactionsRepository: TransactionsRepository,
@@ -123,10 +123,10 @@ export class TransactionsService implements OnApplicationBootstrap {
 
       const responses = await Promise.all(axiosPromises);
 
-      // Create Transactions From etherscan to DB Block
+      // Create Transactions From etherscan Response Transactions to DB Block
 
       const createTransactions: CreateTransactionDto[] = [];
-      
+
       //For each Account Etherscan AxiosResponse
       for (let i = 0; i < responses.length; i++) {
         const accountNewTxs = responses[i] as TransactionEtherscanDTO[];
@@ -135,30 +135,58 @@ export class TransactionsService implements OnApplicationBootstrap {
         for (let z = 0; z < accountNewTxs.length; z++) {
           const tx = accountNewTxs[z];
 
-          //input field is from Sending to a Contract, so is an ERC-20
-          if (tx.input.length >= 6) {
-            //Decode Method and Parameters of tx.input (data)
-            const methodDecoded=await this.web3Service.decodeMethodDataERC20(tx.input);
-            // Get ERC20 Data
-            const ERC20Data= await this.web3Service.getDataOfERC20Token(tx.to);
+          //input field is from Sending to a Contract, if not 0x is an ERC-20
+          if (tx.input.length >= 6) { 
+            //Try, if is not ERC20 Method upload Transaction equal as others
+            try {
+              //Decode Method and Parameters of tx.input (data)
+              //const methodDecoded=await this.web3Service.decodeMethodDataERC20(tx.input);
+              const methodDecoded = this.web3Service.erc20Contract.decodeMethodData(tx.input);
+              // Get ERC20 Data //Get the Name  Symbol and Decimals of the ERC-20
+              const ERC20Data = await this.web3Service.getDataOfERC20Token(tx.to);
 
-            console.log(ERC20Data);
+              console.log(methodDecoded);
 
-            throw new BadRequestException("");
-            //Get the Name and Decimals of the ERC-20
-            createTransactions.push({
+              //Convert value to Real depending on decimals
+              const realValue = (parseInt(methodDecoded[1] as string)/Math.pow(10,parseInt(ERC20Data.decimals))).toFixed(2);
+
+              console.log(realValue);
+              
+              createTransactions.push({
+                account: {
+                  id: accounts[i].id
+                },
+                fromAcc: tx.from,
+                toAcc: methodDecoded[0] as string,
+                value: realValue,
+                block: tx.blockNumber,
+                hash: tx.blockHash,
+                isErc20: true,
+                contractAddress: tx.to,
+                name: ERC20Data.name,
+                symbol: ERC20Data.symbol,
+                decimals: ERC20Data.decimals,
+                method: methodDecoded.__method__,
+                date: parseInt(tx.timeStamp)
+              })
+              //Unknown Method Transaction (Not ERC-20 and Not Ethereum)
+            } catch (error) {
+              createTransactions.push({
               account: {
                 id: accounts[i].id
               },
               fromAcc: tx.from,
               toAcc: tx.to,
-              value: methodDecoded[1],
+              value: this.web3Service.node.utils.fromWei(tx.value,"ether"),
               block: tx.blockNumber,
               hash: tx.blockHash,
-              isErc20: true,
-              contractAddress: tx.to,
+              isErc20: false,
+              method: "unknown",
+              contractAddress: tx.contractAddress,
               date: parseInt(tx.timeStamp)
             })
+            }
+
             //Normal Transaction
           } else {
             createTransactions.push({
@@ -167,9 +195,12 @@ export class TransactionsService implements OnApplicationBootstrap {
               },
               fromAcc: tx.from,
               toAcc: tx.to,
-              value: tx.value,
+              value: this.web3Service.node.utils.fromWei(tx.value,"ether"),
               block: tx.blockNumber,
               hash: tx.blockHash,
+              name: "Ethereum",
+              symbol: "Eth",
+              decimals: "18",
               isErc20: false,
               contractAddress: tx.contractAddress,
               date: parseInt(tx.timeStamp)
