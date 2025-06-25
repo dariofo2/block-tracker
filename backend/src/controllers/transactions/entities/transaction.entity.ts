@@ -1,9 +1,9 @@
 import { Account } from "src/controllers/accounts/entities/account.entity";
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Transaction {
-    @Column()
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column()

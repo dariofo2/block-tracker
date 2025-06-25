@@ -16,5 +16,5 @@ CREATE TABLE IF NOT EXISTS transactions (
     isErc20 TINYINT,
     contractAddress varchar(256),
     date INT,
-    FOREIGN KEY (accountId) REFERENCES accounts (id)
+    FOREIGN KEY (accountId) REFERENCES accounts (id) ON DELETE CASCADE
 );

@@ -1,26 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
+import { DataSource } from 'typeorm';
+import { Account } from './entities/account.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { AccountsRepository } from 'src/database/repository/accounts/accounts.repository';
+import { Transaction } from '../transactions/entities/transaction.entity';
+import { TransactionsRepository } from 'src/database/repository/transactions/transactions.repository';
+import { plainToClass } from 'class-transformer';
 
 @Injectable()
 export class AccountsService {
-  create(createAccountDto: CreateAccountDto) {
-    return 'This action adds a new account';
+  constructor (
+        private accountsRepository: AccountsRepository,
+        private transactionsRepository: TransactionsRepository
+  ) {}
+  async create(createAccountDto: CreateAccountDto) {
+    const newAccount=plainToClass(Account,createAccountDto);
+    return await this.accountsRepository.create(newAccount);
   }
 
-  list() {
-    return `This action returns all accounts`;
+  async list() {
+    return await this.accountsRepository.list();
   }
 
-  get(id: number) {
-    return `This action returns a #${id} account`;
+  async get(id: number) {
+    return await this.accountsRepository.get(id);
   }
 
-  update(id: number, updateAccountDto: UpdateAccountDto) {
-    return `This action updates a #${id} account`;
+  async update(id: number, updateAccountDto: UpdateAccountDto) {
+    return `Update is Disabled in This Endpoint`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} account`;
+  async remove(id: number) {
+    return await this.accountsRepository.delete(id) ;
   }
 }

@@ -13,12 +13,12 @@ export class TransactionsController {
   }
   */
   @Post("list")
-  list() {
+  async list() {
     return this.transactionsService.list();
   }
 
   @Post('get')
-  get(@Param('id') id: string) {
+  async get(@Param('id') id: string) {
     return this.transactionsService.get(+id);
   }
 

@@ -1,28 +1,49 @@
 import { Injectable } from '@nestjs/common';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { UpdateTransactionDto } from './dto/update-transaction.dto';
+import { DataSource } from 'typeorm';
+import { AccountsRepository } from 'src/database/repository/accounts/accounts.repository';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Account } from '../accounts/entities/account.entity';
+import { Transaction } from './entities/transaction.entity';
+import { TransactionsRepository } from 'src/database/repository/transactions/transactions.repository';
 
 @Injectable()
 export class TransactionsService {
-  create(createTransactionDto: CreateTransactionDto) {
-    return 'This action adds a new transaction';
+  private lastBlockUsed: string
+
+  constructor (
+    private accountsRepository: AccountsRepository,
+    private transactionsRepository: TransactionsRepository,
+  ) {}
+
+  async create(transactions: Transaction|Transaction[]) {
+
+  }
+  async list() :Promise<Transaction[]> {
+    return await this.transactionsRepository.list();
   }
 
-  list() {
-    return `This action returns all transactions`;
+  async get(id: number) {
+    return await this.transactionsRepository.get(id);
   }
 
-  get(id: number) {
-    return `This action returns a #${id} transaction`;
+  /**
+   * Get Transactions of Account until Last Block Used
+   * If no blocks used, it starts to Last Block - 1
+   */
+  async getTransactionsOfAccount () {
+    if (this.lastBlockUsed!="") {
+      
+    } else {
+
+    }
   }
 
-  /*
-  update(id: number, updateTransactionDto: UpdateTransactionDto) {
-    return `This action updates a #${id} transaction`;
-  }
+  /**
+   * Refresh new Transactions of All accounts from last Block Used and Update LastBlockUsed
+   */
+  async refreshNewTransactionsOfAccounts () {
 
-  remove(id: number) {
-    return `This action removes a #${id} transaction`;
   }
-    */
 }
