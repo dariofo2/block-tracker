@@ -9,31 +9,31 @@ BlockTracker monitor Blockchain Accounts
 #### Add new Account
 
 1. Add an Account of Blockchain
-2. The backend gets all transactions from 2 months ago to last blocked checked (configurable to Big Data in .env)
-3. Account is Added to keep receiving new transactions
+2. Account is Added to keep receiving new transactions
 
 #### Each 15 seconds
 
 1. Get the last block checked of all accounts
-2. Get Transactions from last block to (Last Blockchain Mined Block - 1) 
-3. Set The last Block for further checks
+2. If last Block is null, then get all transactions from 50.000 blocks to Last Blockchain Mined block - 6 (reorgs) -1
+3. Get Transactions from last block to (Last Blockchain Mined Block - 6 (Reorgs) - 1) 
+4. Set The last Block for further checks
 
 ### Frontend
 
 
-## Things
+## About
 
 ### ERC20 
 
-ERC20 tokens for now are grouped in ERC20 only because there are lot of ERC20 contracts and they have to be obtained manual each one
+ERC20 tokens Are obtan
 
 ### API Indexer
 
-We use Etherscan API to get Transactions, because we have limit on free Infura API
+We use Etherscan API v2 to get Transactions, because getting blocks one by one manually needs lot of calls to Infura Node and lot of time spent waiting
 
 ### Quantity of Past Transactions
 
-Only 2 months by default but configurable
+Only 6 months by default but configurable
 
 ### Refresh time of Blocks
 
@@ -45,4 +45,5 @@ We don't use events cause is so limited in Free Versions and lot of Nodes. Not e
 
 ### Reorgs
 
-We dont care for now about Reorgs, but we will work about em
+In Ethereum Blockchain, until 6 last Blocks can use Reorgs, so we get always transactions to lastblock - 7.
+In other Chains Reorgs can be 12 or 0, so it has to be adapted manually by chain.
