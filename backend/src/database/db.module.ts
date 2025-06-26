@@ -5,6 +5,7 @@ import { Transaction } from 'src/controllers/transactions/entities/transaction.e
 import { AccountsRepository } from './repository/accounts/accounts.repository';
 import { TransactionsRepository } from './repository/transactions/transactions.repository';
 import { User } from 'src/controllers/users/entities/user.entity';
+import UsersRepository from './repository/users/users.repository';
 
 @Module({
     imports:[
@@ -23,12 +24,14 @@ import { User } from 'src/controllers/users/entities/user.entity';
     ],
     providers: [
         AccountsRepository,
-        TransactionsRepository
+        TransactionsRepository,
+        UsersRepository
     ],
     exports: [
         TypeOrmModule,
         AccountsRepository,
-        TransactionsRepository
+        TransactionsRepository,
+        UsersRepository
     ]
 })
 export class DBModule {}

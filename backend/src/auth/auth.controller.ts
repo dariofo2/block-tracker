@@ -14,7 +14,7 @@ export class AuthController {
   }
 
   @Post("login")
-  async login (@Body() requestUserLoginDTO: RequestUserLoginDTO, @Res() res: Response) {
+  async login (@Body() requestUserLoginDTO: RequestUserLoginDTO, @Res({passthrough:true}) res: Response) {
     const responseUserLoginDTO=await this.authService.login(requestUserLoginDTO);
     res.cookie("jwtToken", responseUserLoginDTO.jwtToken,{
       httpOnly: process.env.COOKIES_HTTP_ONLY=="true" ? true : false,

@@ -15,6 +15,7 @@ export class AuthService {
     ) {}
 
     async signin (createUserDTO: CreateUserDto) {
+        createUserDTO.role=1;
         createUserDTO.password=await hash(createUserDTO.password as string,10);
         const createdUser=await this.usersRepository.create(createUserDTO);
         createdUser.password=undefined;
@@ -31,7 +32,7 @@ export class AuthService {
         //If Password is valid Create JWT Token and send By Cookie
         const responseUserLoginDTO= plainToInstance(ResponseUserLoginDTO,user);
         const payload= instanceToPlain(responseUserLoginDTO);
-        const jwtToken=await this.jwtService.signAsync(payload);
+        const jwtToken=await this.jwtService.signAsync(payload, {secret:process.env.JWT_SECRET});
 
         responseUserLoginDTO.jwtToken="Bearer " + jwtToken;
 

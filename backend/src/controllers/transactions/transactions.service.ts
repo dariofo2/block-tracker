@@ -78,6 +78,7 @@ export class TransactionsService implements OnApplicationBootstrap {
     console.log(transactionsResponse);
   }
   */
+  
   /**
    * Refresh new Transactions of All accounts from last Block Used By Account to -> Last Block in Blockchain -1
    * If Account has 0 Transactions in DB, it gets last Block in Blockchain - process.env.past_Blocks
