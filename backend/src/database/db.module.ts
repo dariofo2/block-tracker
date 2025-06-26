@@ -4,6 +4,7 @@ import { Account } from 'src/controllers/accounts/entities/account.entity';
 import { Transaction } from 'src/controllers/transactions/entities/transaction.entity';
 import { AccountsRepository } from './repository/accounts/accounts.repository';
 import { TransactionsRepository } from './repository/transactions/transactions.repository';
+import { User } from 'src/controllers/users/entities/user.entity';
 
 @Module({
     imports:[
@@ -15,10 +16,10 @@ import { TransactionsRepository } from './repository/transactions/transactions.r
                 username: process.env.DB_USERNAME,
                 password: process.env.DB_PASSWORD,
                 database: process.env.DB_DATABASE,
-                entities: [Account,Transaction]
+                entities: [Account,Transaction,User]
             })
         }),
-        TypeOrmModule.forFeature([Account,Transaction])
+        TypeOrmModule.forFeature([Account,Transaction,User])
     ],
     providers: [
         AccountsRepository,

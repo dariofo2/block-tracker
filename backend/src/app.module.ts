@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DBModule } from './database/db.module';
 import { AccountsModule } from './controllers/accounts/accounts.module';
 import { TransactionsModule } from './controllers/transactions/transactions.module';
+import { AuthModule } from './auth/auth.module';
 import BullMQModule from './bullMQ/bullMQ.module';
 import AxiosModule from './axios/axios.module';
 
@@ -15,12 +16,14 @@ import AxiosModule from './axios/axios.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AuthModule,
     Web3Module,
     DBModule,
     BullMQModule,
     AxiosModule,
     AccountsModule,
-    TransactionsModule
+    TransactionsModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],

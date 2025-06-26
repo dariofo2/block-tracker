@@ -113,7 +113,8 @@ export class TransactionsService implements OnApplicationBootstrap {
           offset: 10000,
           sort: "desc",
           action: "txlist",
-          module: "account"
+          module: "account",
+          chainid: 1
         };
 
         //Create Promise and add To Promise Array to later do Promise.all
@@ -135,6 +136,7 @@ export class TransactionsService implements OnApplicationBootstrap {
         for (let z = 0; z < accountNewTxs.length; z++) {
           const tx = accountNewTxs[z];
 
+          //console.log(responses)
           //input field is from Sending to a Contract, if not 0x is an ERC-20
           if (tx.input.length >= 6) { 
             //Try, if is not ERC20 Method upload Transaction equal as others
@@ -145,12 +147,12 @@ export class TransactionsService implements OnApplicationBootstrap {
               // Get ERC20 Data //Get the Name  Symbol and Decimals of the ERC-20
               const ERC20Data = await this.web3Service.getDataOfERC20Token(tx.to);
 
-              console.log(methodDecoded);
+              //console.log(methodDecoded);
 
               //Convert value to Real depending on decimals
               const realValue = (parseInt(methodDecoded[1] as string)/Math.pow(10,parseInt(ERC20Data.decimals))).toFixed(2);
 
-              console.log(realValue);
+              //console.log(realValue);
               
               createTransactions.push({
                 account: {

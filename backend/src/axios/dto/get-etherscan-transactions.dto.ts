@@ -7,4 +7,5 @@ export default class GetEtherscanTransactionsDTO {
     sort: "asc"|"desc";
     module: string;
     action: string;
+    chainid: number;
 }
