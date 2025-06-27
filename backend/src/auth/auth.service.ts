@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from 'src/controllers/users/dto/create-user.dto';
 import UsersRepository from 'src/database/repository/users/users.repository';
 import RequestUserLoginDTO from './dto/request-user-login.dto';
@@ -41,5 +41,18 @@ export class AuthService {
 
     async logout () {
         
+    }
+
+    /**
+     * Checks Manual JWT for Websockets For Example
+     * @param jwtToken 
+     * @returns 
+     */
+    async checkManualAuth (jwtToken: string) : Promise<string|UnauthorizedException> {
+        const tokenSplit=jwtToken.split(" ");
+        if (tokenSplit[0]== "Bearer") {
+            const payload=await this.jwtService.verifyAsync(tokenSplit[1], {secret:process.env.JWT_SECRET})
+            return payload;
+        } else throw new UnauthorizedException("Error on JWT Token");
     }
 }
