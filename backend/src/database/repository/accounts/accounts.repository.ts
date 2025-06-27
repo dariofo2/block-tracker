@@ -66,4 +66,49 @@ export class AccountsRepository {
         const listAccountsLastBlockDTO=plainToInstance(ListAccountsLastBlockDTO,response);
         return listAccountsLastBlockDTO;
     }
+
+    /**
+     * List Transactions by Account and By TimeStamp Seconds (Each timeStamp is 15 Secs Duration)
+     * From Time what u want
+     */
+    async listAccountTransactionsByAccountIdAndTimeStamp() {
+        /*
+            SELECT acc.id,acc.address, tr.date, tr.block, count(*), sum(cast(tr.value AS DECIMAL(5,4)))
+            FROM blocktracker.transactions tr
+            LEFT JOIN blocktracker.accounts acc ON tr.accountId=acc.id
+            WHERE tr.date>(unix_timestamp(now())-259200)
+            GROUP BY acc.id,tr.block
+            ORDER BY tr.date DESC
+            ;
+
+        */
+    }
+
+    /**
+     * List Transactions By Account and By Day
+     * from time what u want
+     */
+    async listAccountTransactionsByDay () {
+        /*
+            SELECT acc.id,acc.address, date(from_unixtime(tr.date)), tr.block, count(*)
+            FROM blocktracker.transactions tr
+            LEFT JOIN blocktracker.accounts acc ON tr.accountId=acc.id
+            WHERE tr.date>(unix_timestamp(now())-259200)
+            GROUP BY acc.id,date(from_unixtime(tr.date))
+            ORDER BY tr.date DESC
+            ;
+        */
+    }
+
+    async listAccountTransactionsByMonth () {
+        /*
+            SELECT acc.id,acc.address, concat(year(from_unixtime(tr.date)),"-",month(from_unixtime(tr.date))) , tr.block, count(*)
+            FROM blocktracker.transactions tr
+            LEFT JOIN blocktracker.accounts acc ON tr.accountId=acc.id
+            WHERE tr.date>(unix_timestamp(now())-25920000)
+            GROUP BY acc.id,concat(year(from_unixtime(tr.date)),"-",month(from_unixtime(tr.date)))
+            ORDER BY tr.date DESC
+            ;
+        */
+    }
 }
