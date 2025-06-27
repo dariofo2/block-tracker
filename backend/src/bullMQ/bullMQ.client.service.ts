@@ -9,22 +9,20 @@ export default class BullMQClientService {
         @InjectQueue("transactions") private transactionsQueue: Queue
     ) {}
 
-    async addTransactionsRefreshJob (accounts:ListAccountsLastBlockDTO[],delay:number) {
+    async addTransactionsRefreshJob (accounts:ListAccountsLastBlockDTO[]) {
         this.transactionsQueue.add("refreshTransactions",
             {
                 accounts: accounts
-            },
-            {
-                delay:0
             }
         )
     }
 
     async waitUntilFinishedJobs () {
         const waitUntilFinished=new Promise((res)=>{
-            setInterval(async ()=>{
+            const intval=setInterval(async ()=>{
                 const jobCounts=await this.transactionsQueue.getJobCounts();
                 if (jobCounts.waiting <=0 && jobCounts.active<=0) {
+                    clearInterval(intval);
                     res(true);
                 }
             },1000)

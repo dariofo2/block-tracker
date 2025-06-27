@@ -11,6 +11,7 @@ export default class BullMQWorkerService extends WorkerHost {
     async process (job: Job<any,any,string>) : Promise<any> {
         switch (job.name) {
             case 'refreshTransactions': {
+                //Always Await 1 Second Because max Calls per Second in Etherscan
                 await new Promise(res => setTimeout(res, 1000));
                 await this.transactionsService.refreshNewTransactionsOfAccounts(job.data['accounts']);
                 console.log("Hecha");

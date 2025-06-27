@@ -2,6 +2,13 @@
 
 BlockTracker monitor Blockchain Accounts
 
+## Manual
+
+1. In /backend, rename .env.schema to .env and introduce API Keys (Infura & Etherscan)
+2. in /, sh ```docker compose up
+3. Update DB with /dbSchema/db.sql
+4. Go to http://localhost:3000
+
 ## How it works
 
 ### Backend

@@ -17,8 +17,8 @@ import BullMQClientService from 'src/bullMQ/bullMQ.client.service';
 
 @Injectable()
 export class TransactionsService implements OnApplicationBootstrap {
-  private timeToNextRefresh: number = 15000;
-  private interval
+  private timeToNextRefresh: number = parseInt(process.env.TIME_BEETWEN_TIMEOUT as string);
+  
   constructor(
     private accountsRepository: AccountsRepository,
     private transactionsRepository: TransactionsRepository,
@@ -40,14 +40,14 @@ export class TransactionsService implements OnApplicationBootstrap {
   }
 
   onApplicationBootstrap() {
-    this.initializeAppRefreshLoop();
+    this.initializeAppRefreshTimeOut();
   }
 
   /**
-   * Initialize App Refresh Loop
+   * Initialize App Refresh Timeout
    */
-  async initializeAppRefreshLoop() {
-    const interval=setInterval(() => {
+  async initializeAppRefreshTimeOut() {
+    setTimeout(() => {
       this.getAccountsAndAddTransactionsJobsToQueue();
     }, this.timeToNextRefresh);
     
@@ -55,7 +55,8 @@ export class TransactionsService implements OnApplicationBootstrap {
 
   /**
    * Get Accounts with LastTransactionBlock
-   * If no blocks used, it starts to Last Block - 1
+   * Add Accounts Divided by process.env.ETHERSCAN_MAX_CALLS_PER_SECOND
+   * Call Await until Finished
    */
 
   async getAccountsAndAddTransactionsJobsToQueue() {
@@ -64,15 +65,21 @@ export class TransactionsService implements OnApplicationBootstrap {
 
     if (accounts.length>0) {
       //Divide Accounts by MaxCallsPerSeconds and send To Queue
-      let delayCount=0;
       for (let i = 0; i < accounts.length; i+=maxCallsPerSecond) {
         const accountsByCall=(accounts.slice(i,i+maxCallsPerSecond));
-        await this.bullMQClientService.addTransactionsRefreshJob(accountsByCall,delayCount);  
-        delayCount+=3000;
+        await this.bullMQClientService.addTransactionsRefreshJob(accountsByCall);  
       }
     }
 
+    await this.awaitUntilAllJobsFinished()
+  }
+
+  /**
+   * Awaits until all jobs finished and start timeout again
+   */
+  async awaitUntilAllJobsFinished () {
     await this.bullMQClientService.waitUntilFinishedJobs();
+    this.initializeAppRefreshTimeOut();
     console.log("finished");
   }
 
@@ -82,12 +89,10 @@ export class TransactionsService implements OnApplicationBootstrap {
    * If Account has 0 Transactions in DB, it gets last Block in Blockchain - process.env.past_Blocks
    */
   async refreshNewTransactionsOfAccounts(accounts:ListAccountsLastBlockDTO[]) {
-    //Get Accounts with lastTransactionBlock
-    //const accounts = await this.accountsRepository.listWithLastTransactionBlock();
-    
     //Get Ethereum Blockchain Last Block
     const lastBlockchainBlock = parseInt((await this.web3Service.node.eth.getBlockNumber()).toString());
 
+    //Create Promise Array to later use Promise.all()
     let axiosPromises: Promise<TransactionEtherscanDTO[] | null>[] = [];
 
     if (accounts.length > 0) {
