@@ -12,16 +12,19 @@ import { Web3Service } from 'src/web3/web3.service';
 import GetEtherscanTransactionsDTO from 'src/axios/dto/get-etherscan-transactions.dto';
 import AxiosService from 'src/axios/axios.service';
 import TransactionEtherscanDTO from 'src/axios/dto/transaction-etherscan.dto';
+import { ListAccountsLastBlockDTO } from '../accounts/dto/list-account-lastBlock.dto';
+import BullMQClientService from 'src/bullMQ/bullMQ.client.service';
 
 @Injectable()
 export class TransactionsService implements OnApplicationBootstrap {
-  private lastBlockUsed: number = 0
-
+  private timeToNextRefresh: number = 15000;
+  private interval
   constructor(
     private accountsRepository: AccountsRepository,
     private transactionsRepository: TransactionsRepository,
     private web3Service: Web3Service,
-    private axiosService: AxiosService
+    private axiosService: AxiosService,
+    private bullMQClientService: BullMQClientService
   ) { }
 
   async create(transactions: CreateTransactionDto | CreateTransactionDto[]) {
@@ -44,49 +47,44 @@ export class TransactionsService implements OnApplicationBootstrap {
    * Initialize App Refresh Loop
    */
   async initializeAppRefreshLoop() {
-    setInterval(() => {
-      this.refreshNewTransactionsOfAccounts();
-    }, 15000);
+    const interval=setInterval(() => {
+      this.getAccountsAndAddTransactionsJobsToQueue();
+    }, this.timeToNextRefresh);
+    
   }
 
   /**
-   * Get Transactions of Account until Last Block Used
+   * Get Accounts with LastTransactionBlock
    * If no blocks used, it starts to Last Block - 1
    */
-  /* NOT NEEDED
-  async getTransactionsOfAccount(address: string) {
-    const blocksToPast = parseInt(process.env.PAST_TRANSACTIONS_BLOCKS as string);
-    if (this.lastBlockUsed <= 0) {
-      const lastBlock = parseInt((await this.web3Service.node.eth.getBlockNumber()).toString());
-      this.lastBlockUsed = lastBlock - 1;
-    } else {
 
+  async getAccountsAndAddTransactionsJobsToQueue() {
+    const accounts = await this.accountsRepository.listWithLastTransactionBlock();
+    const maxCallsPerSecond= parseInt(process.env.ETHERSCAN_MAX_CALLS_PER_SECOND as string);
+
+    if (accounts.length>0) {
+      //Divide Accounts by MaxCallsPerSeconds and send To Queue
+      let delayCount=0;
+      for (let i = 0; i < accounts.length; i+=maxCallsPerSecond) {
+        const accountsByCall=(accounts.slice(i,i+maxCallsPerSecond));
+        await this.bullMQClientService.addTransactionsRefreshJob(accountsByCall,delayCount);  
+        delayCount+=3000;
+      }
     }
 
-    const GetEtherscanTransactionsDTO: GetEtherscanTransactionsDTO = {
-      address: address,
-      startblock: this.lastBlockUsed - blocksToPast,
-      endblock: this.lastBlockUsed,
-      page: 1,
-      offset: 10000,
-      sort: "asc",
-      action: "txlist",
-      module: "account"
-    };
-
-    const transactionsResponse = await this.axiosService.getTransactionsOfAccount(GetEtherscanTransactionsDTO);
-    console.log(transactionsResponse);
+    await this.bullMQClientService.waitUntilFinishedJobs();
+    console.log("finished");
   }
-  */
-  
+
+
   /**
    * Refresh new Transactions of All accounts from last Block Used By Account to -> Last Block in Blockchain -1
    * If Account has 0 Transactions in DB, it gets last Block in Blockchain - process.env.past_Blocks
    */
-  async refreshNewTransactionsOfAccounts() {
+  async refreshNewTransactionsOfAccounts(accounts:ListAccountsLastBlockDTO[]) {
     //Get Accounts with lastTransactionBlock
-    const accounts = await this.accountsRepository.listWithLastTransactionBlock();
-
+    //const accounts = await this.accountsRepository.listWithLastTransactionBlock();
+    
     //Get Ethereum Blockchain Last Block
     const lastBlockchainBlock = parseInt((await this.web3Service.node.eth.getBlockNumber()).toString());
 
@@ -139,7 +137,7 @@ export class TransactionsService implements OnApplicationBootstrap {
 
           //console.log(responses)
           //input field is from Sending to a Contract, if not 0x is an ERC-20
-          if (tx.input.length >= 6) { 
+          if (tx.input.length >= 6) {
             //Try, if is not ERC20 Method upload Transaction equal as others
             try {
               //Decode Method and Parameters of tx.input (data)
@@ -151,10 +149,10 @@ export class TransactionsService implements OnApplicationBootstrap {
               //console.log(methodDecoded);
 
               //Convert value to Real depending on decimals
-              const realValue = (parseInt(methodDecoded[1] as string)/Math.pow(10,parseInt(ERC20Data.decimals))).toFixed(2);
+              const realValue = (parseInt(methodDecoded[1] as string) / Math.pow(10, parseInt(ERC20Data.decimals))).toFixed(2);
 
               //console.log(realValue);
-              
+
               createTransactions.push({
                 account: {
                   id: accounts[i].id
@@ -175,19 +173,19 @@ export class TransactionsService implements OnApplicationBootstrap {
               //Unknown Method Transaction (Not ERC-20 and Not Ethereum)
             } catch (error) {
               createTransactions.push({
-              account: {
-                id: accounts[i].id
-              },
-              fromAcc: tx.from,
-              toAcc: tx.to,
-              value: this.web3Service.node.utils.fromWei(tx.value,"ether"),
-              block: tx.blockNumber,
-              hash: tx.blockHash,
-              isErc20: false,
-              method: "unknown",
-              contractAddress: tx.contractAddress,
-              date: parseInt(tx.timeStamp)
-            })
+                account: {
+                  id: accounts[i].id
+                },
+                fromAcc: tx.from,
+                toAcc: tx.to,
+                value: this.web3Service.node.utils.fromWei(tx.value, "ether"),
+                block: tx.blockNumber,
+                hash: tx.blockHash,
+                isErc20: false,
+                method: "unknown",
+                contractAddress: tx.contractAddress,
+                date: parseInt(tx.timeStamp)
+              })
             }
 
             //Normal Transaction
@@ -198,7 +196,7 @@ export class TransactionsService implements OnApplicationBootstrap {
               },
               fromAcc: tx.from,
               toAcc: tx.to,
-              value: this.web3Service.node.utils.fromWei(tx.value,"ether"),
+              value: this.web3Service.node.utils.fromWei(tx.value, "ether"),
               block: tx.blockNumber,
               hash: tx.blockHash,
               name: "Ethereum",
@@ -216,7 +214,7 @@ export class TransactionsService implements OnApplicationBootstrap {
       console.log(createTransactions);
 
       // Save Transactions to DB
-      this.create(createTransactions);
+      await this.create(createTransactions);
     }
   }
 }
