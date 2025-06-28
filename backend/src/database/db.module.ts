@@ -17,7 +17,18 @@ import UsersRepository from './repository/users/users.repository';
                 username: process.env.DB_USERNAME,
                 password: process.env.DB_PASSWORD,
                 database: process.env.DB_DATABASE,
-                entities: [Account,Transaction,User]
+                entities: [Account,Transaction,User],
+                cache: {
+                    type: 'redis',
+                    options: {
+                        socket:{
+                            host: process.env.REDIS_HOST,
+                            port: parseInt(process.env.REDIS_PORT as string),
+                        },
+                        password: process.env.REDIS_PASSWORD,
+                    },
+                },
+                
             })
         }),
         TypeOrmModule.forFeature([Account,Transaction,User])

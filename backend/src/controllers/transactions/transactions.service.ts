@@ -14,6 +14,8 @@ import AxiosService from 'src/axios/axios.service';
 import TransactionEtherscanDTO from 'src/axios/dto/transaction-etherscan.dto';
 import { ListAccountsLastBlockDTO } from '../accounts/dto/list-account-lastBlock.dto';
 import BullMQClientService from 'src/bullMQ/bullMQ.client.service';
+import listRequestGraphsDTO from 'src/database/dto/listRequestGraphs.dto';
+import { RequestListGroupByAccountAndTimeStamp } from './dto/list/requestListGroupByAccountAndTimeStamp.dto';
 
 @Injectable()
 export class TransactionsService implements OnApplicationBootstrap {
@@ -37,6 +39,21 @@ export class TransactionsService implements OnApplicationBootstrap {
 
   async get(id: number) {
     return await this.transactionsRepository.get(id);
+  }
+
+  async listGroupByAccountsAndTimestamp (listRequestGraphsDTO: listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) {
+    switch (listRequestGraphsDTO.data.type) {
+      case "days":
+        return await this.transactionsRepository.listGroupByAccountAndDay(listRequestGraphsDTO.data.secondsFrom);
+      break;
+      case "months":
+        return await this.transactionsRepository.listGroupByAccountAndMonth(listRequestGraphsDTO.data.secondsFrom);
+      break;
+      case "seconds":
+        return await this.transactionsRepository.listGroupByAccountAndTimeStamp(listRequestGraphsDTO.data.secondsFrom);
+      break;
+    }
+    
   }
 
   onApplicationBootstrap() {
@@ -79,6 +96,8 @@ export class TransactionsService implements OnApplicationBootstrap {
    */
   async awaitUntilAllJobsFinished () {
     await this.bullMQClientService.waitUntilFinishedJobs();
+    await this.transactionsRepository.deleteCache();
+    
     this.initializeAppRefreshTimeOut();
     console.log("finished");
   }
