@@ -1,4 +1,4 @@
 export class RequestListGroupByAccountAndTimeStamp {
-    secondsFrom: number;
-    type: "seconds"|"days"|"months";
+    secondsFrom?: number;
+    type?: "seconds"|"days"|"months";
 }

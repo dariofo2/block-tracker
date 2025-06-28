@@ -26,9 +26,9 @@ export class TransactionsController {
     return this.transactionsService.get(+id);
   }
 
-  @Post("listGraphs")
-  async listGraphs(@Body() listRequestGraphsDTO: listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) {
-    return await this.transactionsService.listGroupByAccountsAndTimestamp(listRequestGraphsDTO);
+  @Post("listGroupByAccountsAndTime")
+  async listGroupByAccountsAndTime(@Body() listRequestGraphsDTO: listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) {
+    return await this.transactionsService.listGroupByAccountsAndTime(listRequestGraphsDTO);
   }
 
   /*

@@ -1,14 +1,8 @@
-import { Transaction } from "src/controllers/transactions/entities/transaction.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Transaction } from "../../transactions/entities/transaction.entity";
 
-@Entity("accounts")
 export class Account {
-    @PrimaryGeneratedColumn()
-    id: number;
+    id?: number;
+    address?: string;
+    transactions?: Transaction[]
 
-    @Column()
-    address: string;
-
-    @OneToMany(type=>Transaction,transaction=>transaction.id)
-    transactions: Transaction[]
 }

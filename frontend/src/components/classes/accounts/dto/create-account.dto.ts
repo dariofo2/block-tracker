@@ -1,3 +1,3 @@
 export class CreateAccountDto {
-    address: string;
+    address?: string;
 }

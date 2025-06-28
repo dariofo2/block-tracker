@@ -1,3 +1,3 @@
 export default class DeleteAccountDTO {
-    id: number;
+    id?: number;
 }

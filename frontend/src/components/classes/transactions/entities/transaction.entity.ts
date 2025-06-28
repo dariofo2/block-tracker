@@ -1,47 +1,18 @@
-import { Account } from "src/controllers/accounts/entities/account.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-
-@Entity("transactions")
+import { Account } from "../../accounts/entity/account.entity";
 export class Transaction {
-    @PrimaryGeneratedColumn()
-    id: number;
+    id?: number;
+    fromAcc?: string;
+    toAcc?: string;
+    value?: string;
+    block?: string;
+    hash?: string;
+    isErc20?: boolean;
+    contractAddress?: string;
+    method?: string;
+    name?: string;
+    symbol?: string;
+    decimals?: string;
+    date?: number;
+    account?:Account;
 
-    @Column()
-    fromAcc: string;
-
-    @Column()
-    toAcc: string;
-
-    @Column()
-    value: string;
-
-    @Column()
-    block: string;
-
-    @Column()
-    hash: string;
-
-    @Column()
-    isErc20: boolean;
-
-    @Column()
-    contractAddress: string;
-
-    @Column()
-    method: string;
-
-    @Column()
-    name: string;
-
-    @Column()
-    symbol: string;
-
-    @Column()
-    decimals: string;
-
-    @Column()
-    date: number;
-    
-    @ManyToOne(type=>Account,account=>account.id)
-    account:Account
 }

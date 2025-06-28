@@ -1,5 +1,5 @@
 export class ListAccountsLastBlockDTO {
-    id: number;
-    address: string;
-    lastBlockNumber: string;
+    id?: number;
+    address?: string;
+    lastBlockNumber?: string;
 }

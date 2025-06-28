@@ -41,7 +41,7 @@ export class TransactionsService implements OnApplicationBootstrap {
     return await this.transactionsRepository.get(id);
   }
 
-  async listGroupByAccountsAndTimestamp (listRequestGraphsDTO: listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) {
+  async listGroupByAccountsAndTime (listRequestGraphsDTO: listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) {
     switch (listRequestGraphsDTO.data.type) {
       case "days":
         return await this.transactionsRepository.listGroupByAccountAndDay(listRequestGraphsDTO.data.secondsFrom);
@@ -97,7 +97,7 @@ export class TransactionsService implements OnApplicationBootstrap {
   async awaitUntilAllJobsFinished () {
     await this.bullMQClientService.waitUntilFinishedJobs();
     await this.transactionsRepository.deleteCache();
-    
+
     this.initializeAppRefreshTimeOut();
     console.log("finished");
   }
