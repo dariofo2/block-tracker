@@ -1,9 +1,9 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/controllers/users/dto/create-user.dto';
 import RequestUserLoginDTO from './dto/request-user-login.dto';
 import { Response } from 'express';
-
+@UsePipes(new ValidationPipe({transform:true}))
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

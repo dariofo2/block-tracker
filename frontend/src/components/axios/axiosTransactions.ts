@@ -10,10 +10,10 @@ export default class AxiosTransactions {
     /** Backend url from .env */
     static backendURL=process.env.NEXT_PUBLIC_BACKEND_URL
 
-    static async listGroupByAccountsAndTime (listRequestGraphsDTO:listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) :Promise<listReponseGraphsDTO<ResponseListGroupByAccountAndTimeStamp>> {
+    static async listGraphsAccounts (listRequestGraphsDTO:listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) :Promise<listReponseGraphsDTO<ResponseListGroupByAccountAndTimeStamp>> {
         try {
         const transactionsResponse=await axios.post<listReponseGraphsDTO<ResponseListGroupByAccountAndTimeStamp>>(
-            `${this.backendURL}/transactions/listGroupByAccountsAndTime`,
+            `${this.backendURL}/transactions/listGraphsAccounts`,
             listRequestGraphsDTO,
             {
                 withCredentials:true

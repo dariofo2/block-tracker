@@ -18,8 +18,8 @@ export default class AxiosAuth {
     static async signin(createUserDTO: CreateUserDto) : Promise<User> {
         try {
             const userResponse = await axios.post<User>(
-                `${this.backendURL}/auth/login`,
-                { createUserDTO },
+                `${this.backendURL}/auth/signin`,
+                createUserDTO,
                 {
                     withCredentials: true
                 }
@@ -41,10 +41,8 @@ export default class AxiosAuth {
         try {
             const userResponse = await axios.post<ResponseUserLoginDTO>(
                 `${this.backendURL}/auth/login`,
-                { userRequestLoginDTO },
-                {
-                    withCredentials: true
-                }
+                userRequestLoginDTO,
+                {withCredentials:true} 
             );
             toast.success("Login Succesfull", { containerId: "axios" });
             this.setUserCookies(plainToInstance(User, userRequestLoginDTO));

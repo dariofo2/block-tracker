@@ -16,7 +16,7 @@ export default class AxiosAccounts {
        try {
         const accountResponse=await axios.post<Account>(
             `${this.backendURL}/accounts/create`,
-            {createAccountDTO},
+            createAccountDTO,
             {
                 withCredentials:true
             }

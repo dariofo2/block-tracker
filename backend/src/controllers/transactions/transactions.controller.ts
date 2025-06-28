@@ -22,12 +22,12 @@ export class TransactionsController {
   }
 
   @Post('get')
-  async get(@Param('id') id: string) {
-    return this.transactionsService.get(+id);
+  async get(@Body() getDTO:{id:number}) {
+    return this.transactionsService.get(getDTO.id);
   }
 
-  @Post("listGroupByAccountsAndTime")
-  async listGroupByAccountsAndTime(@Body() listRequestGraphsDTO: listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) {
+  @Post("listGraphsAccounts")
+  async listGraphsAccounts(@Body() listRequestGraphsDTO: listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>) {
     return await this.transactionsService.listGroupByAccountsAndTime(listRequestGraphsDTO);
   }
 
