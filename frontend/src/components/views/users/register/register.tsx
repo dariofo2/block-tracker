@@ -1,17 +1,17 @@
 "use client"
 
 import AxiosAuth from "@/components/axios/axiosAuth";
-import RequestUserLoginDTO from "@/components/classes/auth/dto/request-user-login.dto";
+import { CreateUserDto } from "@/components/classes/users/dto/create-user.dto";
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
 
-export default function Login () {
-    const [userLogin,setUserLogin]=useState({} as RequestUserLoginDTO);
+export default function Register () {
+    const [createUserDTO,setCreateUserDTO]=useState({} as CreateUserDto);
     const formRef=useRef(null as HTMLFormElement|null);
 
     function changeInput (e:ChangeEvent) {
         const inputElem=e.target as HTMLInputElement;
-        setUserLogin({
-            ...userLogin,
+        setCreateUserDTO({
+            ...createUserDTO,
             [inputElem.name]:inputElem.value
         })
     }
@@ -21,14 +21,27 @@ export default function Login () {
         formRef.current?.classList.add("was-validated");
         if (formRef.current?.checkValidity()) {
             formRef.current.classList.remove("was-validated");
-            console.log(userLogin);
-            const loginResponse=await AxiosAuth.login(userLogin);
+            const createUserResponse=await AxiosAuth.signin(createUserDTO);
         }
     }
 
     return (
         <div>
             <form ref={formRef} onSubmit={submit} noValidate>
+                <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-envelope-fill"></i></span>
+                    <div className="form-floating">
+                        <input className="form-control" name="name" type="text" onChange={changeInput} placeholder="Name" required />
+                        <label>Name</label>
+                    </div>
+                </div>
+                <div className="input-group">
+                    <span className="input-group-text"><i className="bi bi-envelope-fill"></i></span>
+                    <div className="form-floating">
+                        <input className="form-control" name="surname" type="text" onChange={changeInput} placeholder="Surname" required />
+                        <label>Surname</label>
+                    </div>
+                </div>
                 <div className="input-group">
                     <span className="input-group-text"><i className="bi bi-envelope-fill"></i></span>
                     <div className="form-floating">
