@@ -1,5 +1,5 @@
 import { Account } from "src/controllers/accounts/entities/account.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("transactions")
 export class Transaction {
@@ -42,6 +42,6 @@ export class Transaction {
     @Column()
     date: number;
     
-    @ManyToOne(type=>Account,account=>account.id)
+    @ManyToOne(()=>Account,account=>account.id)
     account:Account
 }

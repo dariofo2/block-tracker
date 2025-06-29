@@ -10,6 +10,7 @@ import { TransactionsRepository } from 'src/database/repository/transactions/tra
 import { plainToClass } from 'class-transformer';
 import { TransactionsService } from '../transactions/transactions.service';
 import DeleteAccountDTO from './dto/delete-account.dto';
+import { ListRequestDatatablesDTO } from 'src/database/dto/listRequestDatatables.dto';
 
 @Injectable()
 export class AccountsService {
@@ -26,8 +27,8 @@ export class AccountsService {
     return accountCreated; 
   }
 
-  async list() {
-    return await this.accountsRepository.list();
+  async list(listRequestDatatablesDTO: ListRequestDatatablesDTO) {
+    return await this.accountsRepository.list(listRequestDatatablesDTO);
   }
 
   async get(id: number) {

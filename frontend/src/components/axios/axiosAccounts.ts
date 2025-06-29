@@ -3,6 +3,8 @@ import { toast } from "react-toastify";
 import AxiosErrors from "./axiosErrors";
 import { CreateAccountDto } from "../classes/accounts/dto/create-account.dto";
 import { Account } from "../classes/accounts/entity/account.entity";
+import { ListRequestDatatablesDTO } from "../classes/datatables/listRequestDatatables.dto";
+import { ListResponseDatatablesDTO } from "../classes/datatables/listResponseDatatables.dto";
 
 export default class AxiosAccounts {
     static backendURL=process.env.NEXT_PUBLIC_BACKEND_URL
@@ -52,20 +54,20 @@ export default class AxiosAccounts {
     }
 
     /**
-     * List Accounts
+     * List Accounts Using Datatables
      * @returns 
      */
-    static async list () : Promise<Account[]> {
+    static async list (listRequestDatatablesDTO: ListRequestDatatablesDTO) : Promise<ListResponseDatatablesDTO<Account>> {
         try {
-        const accountsList=await axios.post<Account[]>(
+        const accountsList=await axios.post<ListResponseDatatablesDTO<Account>>(
             `${this.backendURL}/accounts/list`,
-            {},
+            listRequestDatatablesDTO,
             {
                 withCredentials:true
             }
         );
         toast.success("List Accounts Sucessfully",{containerId:"axios"});
-        return (await accountsList).data;
+        return accountsList.data;
         } catch (error) {
             await AxiosErrors.axiosError(<AxiosError>error);
             throw error;

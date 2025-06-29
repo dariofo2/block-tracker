@@ -17,6 +17,8 @@ import BullMQClientService from 'src/bullMQ/bullMQ.client.service';
 import listRequestGraphsDTO from 'src/database/dto/listRequestGraphs.dto';
 import { RequestListGroupByAccountAndTimeStamp } from './dto/list/requestListGroupByAccountAndTimeStamp.dto';
 import { WebSocketsGateway } from 'src/web-sockets/web-sockets.gateway';
+import { ListRequestDatatablesDTO } from 'src/database/dto/listRequestDatatables.dto';
+import { ListResponseDatatablesDTO } from 'src/database/dto/listResponseDatatables.dto';
 
 @Injectable()
 export class TransactionsService implements OnApplicationBootstrap {
@@ -34,9 +36,15 @@ export class TransactionsService implements OnApplicationBootstrap {
   async create(transactions: CreateTransactionDto | CreateTransactionDto[]) {
     return await this.transactionsRepository.create(transactions);
   }
-  async list(): Promise<Transaction[]> {
-    console.log(await this.accountsRepository.listWithLastTransactionBlock());
-    return await this.transactionsRepository.list();
+
+  async list(listRequestDatatablesDTO: ListRequestDatatablesDTO): Promise<ListResponseDatatablesDTO<Transaction>> {
+    //console.log(await this.accountsRepository.listWithLastTransactionBlock());
+    return await this.transactionsRepository.list(listRequestDatatablesDTO);
+  }
+
+  async listByAccountId(listRequestDatatablesDTO: ListRequestDatatablesDTO): Promise<ListResponseDatatablesDTO<Transaction>> {
+    //console.log(await this.accountsRepository.listWithLastTransactionBlock());
+    return await this.transactionsRepository.listByAccountId(listRequestDatatablesDTO);
   }
 
   async get(id: number) {

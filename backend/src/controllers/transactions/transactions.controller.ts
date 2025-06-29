@@ -5,6 +5,7 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import listRequestGraphsDTO from 'src/database/dto/listRequestGraphs.dto';
 import { RequestListGroupByAccountAndTimeStamp } from './dto/list/requestListGroupByAccountAndTimeStamp.dto';
+import { ListRequestDatatablesDTO } from 'src/database/dto/listRequestDatatables.dto';
 
 @UseGuards(AuthGuard)
 @Controller('transactions')
@@ -17,8 +18,13 @@ export class TransactionsController {
   }
   */
   @Post("list")
-  async list() {
-    return this.transactionsService.list();
+  async list(@Body() listRequestDatatablesDTO: ListRequestDatatablesDTO) {
+    return this.transactionsService.list(listRequestDatatablesDTO);
+  }
+
+  @Post("listByAccountId")
+  async listByAccountId(@Body() listRequestDatatablesDTO: ListRequestDatatablesDTO) {
+    return this.transactionsService.listByAccountId(listRequestDatatablesDTO);
   }
 
   @Post('get')

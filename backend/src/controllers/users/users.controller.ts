@@ -2,19 +2,20 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ListRequestDatatablesDTO } from 'src/database/dto/listRequestDatatables.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post("list")
-  findAll() {
-    return this.usersService.findAll();
+  list(@Body() listRequestDatatablesDTO: ListRequestDatatablesDTO) {
+    return this.usersService.list(listRequestDatatablesDTO);
   }
 
   @Post('get')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  get(@Body() getDTO:{id: number}) {
+    return this.usersService.get(getDTO.id);
   }
 
   @Post('update')

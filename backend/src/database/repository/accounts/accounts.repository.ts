@@ -4,6 +4,8 @@ import { plainToClass, plainToInstance } from "class-transformer";
 import { CreateAccountDto } from "src/controllers/accounts/dto/create-account.dto";
 import {ListAccountsLastBlockDTO } from "src/controllers/accounts/dto/list-account-lastBlock.dto";
 import { Account } from "src/controllers/accounts/entities/account.entity";
+import { ListRequestDatatablesDTO } from "src/database/dto/listRequestDatatables.dto";
+import { ListResponseDatatablesDTO } from "src/database/dto/listResponseDatatables.dto";
 import { DataSource, Equal, Repository } from "typeorm";
 
 @Injectable()
@@ -40,9 +42,25 @@ export class AccountsRepository {
         }
     }
 
-    async list () : Promise<Account[]> {
-        const listAccountsResponse=await this.accountsRepository.find();
-        return listAccountsResponse;
+    async list (listRequestDatatablesDTO:ListRequestDatatablesDTO) : Promise<ListResponseDatatablesDTO<Account>> {
+        const listAccountsResponse=await this.dataSource.createQueryBuilder()
+        .select("accounts")
+        .from(Account,"accounts")
+        .where("address like :search",{search:listRequestDatatablesDTO.searchValue})
+        .orderBy(listRequestDatatablesDTO.orderName,listRequestDatatablesDTO.orderDirection as "ASC"|"DESC")
+        .limit(listRequestDatatablesDTO.limit)
+        .offset(listRequestDatatablesDTO.offset)
+        .getManyAndCount()
+        
+        const responseListDTO: ListResponseDatatablesDTO<Account> = {
+            draw:listRequestDatatablesDTO.draw,
+            data:listAccountsResponse[0],
+            recordsFiltered:listAccountsResponse[1],
+            recordsTotal: await this.accountsRepository.count()
+        }
+
+        //const listAccountsResponse=await this.accountsRepository.find();
+        return responseListDTO;
     }
 
     async get (id:number) : Promise<Account|null> {

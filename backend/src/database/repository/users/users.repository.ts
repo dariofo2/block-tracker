@@ -3,6 +3,8 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { CreateUserDto } from "src/controllers/users/dto/create-user.dto";
 import { UpdateUserDto } from "src/controllers/users/dto/update-user.dto";
 import { User } from "src/controllers/users/entities/user.entity";
+import { ListRequestDatatablesDTO } from "src/database/dto/listRequestDatatables.dto";
+import { ListResponseDatatablesDTO } from "src/database/dto/listResponseDatatables.dto";
 import { DataSource, Equal, Repository } from "typeorm";
 
 @Injectable()
@@ -55,8 +57,24 @@ export default class UsersRepository {
 
     }
 
-    async list () : Promise<User[]> {
-        const users=await this.userRepository.find();
-        return users
-    }
+    async list(listRequestDatatablesDTO: ListRequestDatatablesDTO): Promise<ListResponseDatatablesDTO<User>> {
+            const listTransactions = await this.dataSource.createQueryBuilder()
+                .select("users")
+                .from(User, "users")
+                .where("users.id like :search OR users.name like :search OR users.surname like :search OR users.email like :search OR users.role like :search", { search: listRequestDatatablesDTO.searchValue })
+                .orderBy(listRequestDatatablesDTO.orderName, listRequestDatatablesDTO.orderDirection as "ASC" | "DESC")
+                .limit(listRequestDatatablesDTO.limit)
+                .offset(listRequestDatatablesDTO.offset)
+                .getManyAndCount()
+    
+            const responseListDTO: ListResponseDatatablesDTO<User> = {
+                draw: listRequestDatatablesDTO.draw,
+                data: listTransactions[0],
+                recordsFiltered: listTransactions[1],
+                recordsTotal: await this.userRepository.count()
+            }
+    
+            //const listAccountsResponse=await this.accountsRepository.find();
+            return responseListDTO;
+        }
 }

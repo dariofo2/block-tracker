@@ -4,6 +4,7 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import DeleteAccountDTO from './dto/delete-account.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
+import { ListRequestDatatablesDTO } from 'src/database/dto/listRequestDatatables.dto';
 
 @UseGuards(AuthGuard)
 @Controller('accounts')
@@ -16,13 +17,14 @@ export class AccountsController {
   }
 
   @Post("list")
-  async list() {
-    return this.accountsService.list();
+  async list(@Body() listRequestDatatablesDTO: ListRequestDatatablesDTO) {
+    console.log(listRequestDatatablesDTO)
+    return this.accountsService.list(listRequestDatatablesDTO);
   }
 
   @Post("get")
-  async get(@Body() id: string) {
-    return this.accountsService.get(+id);
+  async get(@Body() getDTO: {id:number}) {
+    return this.accountsService.get(getDTO.id);
   }
 
   /* Update Disabled

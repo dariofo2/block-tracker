@@ -18,9 +18,8 @@ import AxiosTransactions from "@/components/axios/axiosTransactions";
 import moment from "moment";
 
 DataTable.use(DT);
-export default function AccountView () {
+export default function TransactionsList () {
     const dataTableElem= useRef(null as DataTableRef|null);
-    const idAccount= useRef(useSearchParams().get("id"))
     
     useEffect(()=>{
     })
@@ -86,11 +85,11 @@ export default function AccountView () {
                         limit:dataProcess.length,
                         offset:dataProcess.start,
                         draw: dataProcess.draw,
-                        data:{id:idAccount.current}
+                        data:{}
                         
                     }
                     console.log(listRequestDatatablesDTO)
-                    const response= await AxiosTransactions.listByAccountId(listRequestDatatablesDTO);
+                    const response= await AxiosTransactions.list(listRequestDatatablesDTO);
                     console.log(response);
                     callback(response);
                 },
