@@ -1,10 +1,7 @@
-export default class lineChartData {
-        data?: {
-            x: number,
-            y: number,
-            r: number,
-        }[];
+export default class lineChartData<T> {
+        data?:T[];
         label?: string;
+        tension?: number;
         type?:string;
         pointRadius?: number;
 }

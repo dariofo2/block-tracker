@@ -5,18 +5,36 @@ import listRequestGraphsDTO from "@/components/classes/database/dto/listRequestG
 import listReponseGraphsDTO from "@/components/classes/database/dto/listResponseGraphs.dto";
 import { RequestListGroupByAccountAndTimeStamp } from "@/components/classes/transactions/dto/list/requestListGroupByAccountAndTimeStamp.dto";
 import { ResponseListGroupByAccountAndTimeStamp } from "@/components/classes/transactions/dto/list/responseListGroupByAccountAndTimeStamp.dto";
+import SocketIoClient from "@/components/socket.io/socket.io";
 import { Chart, ChartItem } from "chart.js/auto";
 import moment from "moment";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function GraphGroupByAccountsAndTimeStamp() {
     const [graphData, setGraphData] = useState(null as listReponseGraphsDTO<ResponseListGroupByAccountAndTimeStamp> | null);
     const [requestGraphsDTO, setRequestGraphsDTO] = useState({ data: { secondsFrom: 500, type: "seconds" } } as listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>);
+    const [graph, setGraph] = useState(null as Chart | null);
+    let doOnce = false;
 
     useEffect(() => {
         getGraphData();
+        /*
+        setInterval(() => {
+            getGraphData();
+        }, 5000)
+        */
     }, []);
 
+    useEffect(() => {
+        if (graphData) {
+            if (graph) {
+                refreshGraph();
+            } else {
+                initializeGraph();
+            }
+        }
+
+    }, [graphData]);
     /**
      * Connect to WebSockets
      */
@@ -24,46 +42,59 @@ export default function GraphGroupByAccountsAndTimeStamp() {
     async function getGraphData() {
         const graphResponse = await AxiosTransactions.listGraphsAccounts(requestGraphsDTO);
         setGraphData({ ...graphResponse });
-        refreshGraph(graphResponse.data)
     }
 
-    async function refreshGraph(responseListGroupByAccountAndTimeStamp: ResponseListGroupByAccountAndTimeStamp[]) {
+    async function initializeGraph() {
+        const dataFormated = await convertDataToChartJsData(graphData?.data as ResponseListGroupByAccountAndTimeStamp[]);
+        createGraphByTimeStamp(dataFormated);
+    }
+
+    async function refreshGraph() {
+        const dataFormated = await convertDataToChartJsData(graphData?.data as ResponseListGroupByAccountAndTimeStamp[]);
+        (graph as Chart).data.datasets = dataFormated as any;
+        (graph as any).update("none")
+    }
+
+    async function convertDataToChartJsData(responseListGroupByAccountAndTimeStamp: ResponseListGroupByAccountAndTimeStamp[]) {
         //Convert Data To Chart.js Data
-        const addressSet=new Set(responseListGroupByAccountAndTimeStamp.map(x=>x.address));
-        
-        const data = responseListGroupByAccountAndTimeStamp.reduce((data: Map<string, lineChartData>, x, index) => {
+        //const addressSet=new Set(responseListGroupByAccountAndTimeStamp.map(x=>x.address));
+
+        const data = responseListGroupByAccountAndTimeStamp.reduce((data: Map<string, lineChartData<ResponseListGroupByAccountAndTimeStamp>>, x, index) => {
 
             const dataAddress = data.get(x.address as string);
             if (dataAddress) {
-                (data.get(x.address as string) as lineChartData).data?.push({x:x.date as number,y:x.totalcount as number,r:x.totalvalue as number});
+                (data.get(x.address as string) as lineChartData<ResponseListGroupByAccountAndTimeStamp>).data?.push(x);
             } else {
-                data.set(x.address as string, { data: [{x:x.date as number,y:x.totalcount as number,r:x.totalvalue as number}], label: x.address });
+                data.set(x.address as string, { data: [x], label: x.address, tension: 0.2, pointRadius: 2 });
             }
 
             return data;
-        }, new Map<string, lineChartData>)
+        }, new Map<string, lineChartData<ResponseListGroupByAccountAndTimeStamp>>)
 
         const dataFormated: any = [];
         data.forEach(x => {
             dataFormated.push(x)
         })
 
-
-        /*
-        const dataBubbleFormated: any = [];
-        data.forEach(x => {
-            dataBubbleFormated.push({...x,type:"bubble"});
-        })
-            */
-        new Chart(
+        return dataFormated;
+    }
+    /**
+     * 
+     * @param responseListGroupByAccountAndTimeStamp 
+     */
+    async function createGraphByTimeStamp(dataFormated: any) {
+        setGraph(new Chart(
             document.getElementById("chart") as ChartItem,
             {
                 type: "line",
                 data: {
-                    //labels: Array.from(addressSet),
                     datasets: dataFormated
                 },
                 options: {
+                    parsing: {
+                        xAxisKey: 'date',
+                        yAxisKey: 'totalcount'
+                    },
                     scales: {
                         x: {
                             type: "linear",
@@ -78,8 +109,12 @@ export default function GraphGroupByAccountsAndTimeStamp() {
                         tooltip: {
                             callbacks: {
                                 title: function (context) {
-                                    const time=context[0].parsed.x
+                                    const time = context[0].parsed.x
                                     return moment.unix(time as number).format("hh:mm:ss")
+                                },
+                                afterTitle: function (context) {
+                                    const valueTotal = (context[0].raw as any).valuetotal;
+                                    return "Total Value: " + valueTotal;
                                 }
                             }
                         }
@@ -87,12 +122,15 @@ export default function GraphGroupByAccountsAndTimeStamp() {
                 },
 
             }
-        )
+        ))
     }
+
+
 
     return (
         <div>
             <canvas id="chart"></canvas>
+            <SocketIoClient onUpdate={getGraphData}/>
         </div>
     )
 }
