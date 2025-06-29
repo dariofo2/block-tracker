@@ -3,6 +3,7 @@
 import AxiosAuth from "@/components/axios/axiosAuth";
 import { CreateUserDto } from "@/components/classes/users/dto/create-user.dto";
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
+import { ToastContainer } from "react-toastify";
 
 export default function Register () {
     const [createUserDTO,setCreateUserDTO]=useState({} as CreateUserDto);
@@ -58,6 +59,7 @@ export default function Register () {
                 </div>
                 <button className="btn btn-primary w-100 mt-3">Go</button>
             </form>
+            <ToastContainer containerId={"axios"}/>
         </div>
     );
 }

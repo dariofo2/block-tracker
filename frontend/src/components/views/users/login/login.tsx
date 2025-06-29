@@ -2,7 +2,9 @@
 
 import AxiosAuth from "@/components/axios/axiosAuth";
 import RequestUserLoginDTO from "@/components/classes/auth/dto/request-user-login.dto";
+import { redirect } from "next/navigation";
 import { ChangeEvent, FormEvent, useRef, useState } from "react";
+import { ToastContainer } from "react-toastify";
 
 export default function Login () {
     const [userLogin,setUserLogin]=useState({} as RequestUserLoginDTO);
@@ -23,6 +25,7 @@ export default function Login () {
             formRef.current.classList.remove("was-validated");
             console.log(userLogin);
             const loginResponse=await AxiosAuth.login(userLogin);
+            redirect("/");
         }
     }
 
@@ -45,6 +48,7 @@ export default function Login () {
                 </div>
                 <button className="btn btn-primary w-100 mt-3">Go</button>
             </form>
+            <ToastContainer containerId={"axios"}/>
         </div>
     );
 }

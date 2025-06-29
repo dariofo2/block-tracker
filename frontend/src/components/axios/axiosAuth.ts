@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import AxiosErrors from "./axiosErrors";
 import { plainToInstance } from "class-transformer";
 import { CreateUserDto } from "../classes/users/dto/create-user.dto";
+import { redirect } from "next/navigation";
 export default class AxiosAuth {
     static backendURL = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -45,7 +46,7 @@ export default class AxiosAuth {
                 {withCredentials:true} 
             );
             toast.success("Login Succesfull", { containerId: "axios" });
-            this.setUserCookies(plainToInstance(User, userRequestLoginDTO));
+            this.setUserCookies(plainToInstance(User, userResponse.data));
             return userResponse.data;
         } catch (error) {
             await AxiosErrors.axiosError(<AxiosError>error);
@@ -66,7 +67,8 @@ export default class AxiosAuth {
                 }
             );
             toast.success("Logout Succesfull", { containerId: "axios" });
-            this.removeUserCookies();
+            await this.removeUserCookies();
+            
         } catch (error) {
             await AxiosErrors.axiosError(<AxiosError>error);
             throw error;

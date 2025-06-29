@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 export default async function UsersListPage () {
     const userCookie=(await cookies()).get("user")?.value;
     const user:User=userCookie ? JSON.parse(userCookie) : undefined;
-
+    
     if (!user) redirect("/");
 
     if (user.role as number < 2) redirect("/")
