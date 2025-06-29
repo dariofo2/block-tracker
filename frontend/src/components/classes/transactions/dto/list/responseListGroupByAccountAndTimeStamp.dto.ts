@@ -2,7 +2,7 @@ export class ResponseListGroupByAccountAndTimeStamp {
     id?: number;
     address?: string;
     block?: string;
-    date?: string;
+    date?: number;
     totalcount?: number;
     totalvalue?: number;
 }

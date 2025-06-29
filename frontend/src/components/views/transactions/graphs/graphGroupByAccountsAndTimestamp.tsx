@@ -17,6 +17,10 @@ export default function GraphGroupByAccountsAndTimeStamp() {
         getGraphData();
     }, []);
 
+    /**
+     * Connect to WebSockets
+     */
+
     async function getGraphData() {
         const graphResponse = await AxiosTransactions.listGraphsAccounts(requestGraphsDTO);
         setGraphData({ ...graphResponse });
@@ -26,36 +30,37 @@ export default function GraphGroupByAccountsAndTimeStamp() {
     async function refreshGraph(responseListGroupByAccountAndTimeStamp: ResponseListGroupByAccountAndTimeStamp[]) {
         //Convert Data To Chart.js Data
         const addressSet=new Set(responseListGroupByAccountAndTimeStamp.map(x=>x.address));
-        console.log(addressSet);
         
-        const data = responseListGroupByAccountAndTimeStamp.reduce((data: Map<string, lineChartData<ResponseListGroupByAccountAndTimeStamp>>, x, index) => {
+        const data = responseListGroupByAccountAndTimeStamp.reduce((data: Map<string, lineChartData>, x, index) => {
 
             const dataAddress = data.get(x.address as string);
             if (dataAddress) {
-                (data.get(x.address as string) as lineChartData<ResponseListGroupByAccountAndTimeStamp>).data?.push(x)
+                (data.get(x.address as string) as lineChartData).data?.push({x:x.date as number,y:x.totalcount as number,r:x.totalvalue as number});
             } else {
-                data.set(x.address as string, { data: [x], label: x.address });
+                data.set(x.address as string, { data: [{x:x.date as number,y:x.totalcount as number,r:x.totalvalue as number}], label: x.address });
             }
 
             return data;
-        }, new Map<string, lineChartData<ResponseListGroupByAccountAndTimeStamp>>)
+        }, new Map<string, lineChartData>)
 
         const dataFormated: any = [];
         data.forEach(x => {
             dataFormated.push(x)
         })
 
+
+        /*
         const dataBubbleFormated: any = [];
         data.forEach(x => {
-            dataBubbleFormated.push({})
+            dataBubbleFormated.push({...x,type:"bubble"});
         })
-            
+            */
         new Chart(
             document.getElementById("chart") as ChartItem,
             {
                 type: "line",
                 data: {
-                    labels: Array.from(addressSet),
+                    //labels: Array.from(addressSet),
                     datasets: dataFormated
                 },
                 options: {
@@ -68,10 +73,6 @@ export default function GraphGroupByAccountsAndTimeStamp() {
                                 },
                             }
                         }
-                    },
-                    parsing: {
-                        xAxisKey: 'date',
-                        yAxisKey: 'totalcount'
                     },
                     plugins: {
                         tooltip: {
