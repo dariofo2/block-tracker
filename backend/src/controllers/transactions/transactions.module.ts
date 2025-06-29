@@ -7,9 +7,10 @@ import { HttpModule } from '@nestjs/axios';
 import AxiosModule from 'src/axios/axios.module';
 import { AuthModule } from 'src/auth/auth.module';
 import BullMQModule from 'src/bullMQ/bullMQ.module';
+import { WebSocketsModule } from 'src/web-sockets/web-sockets.module';
 
 @Module({
-  imports: [DBModule,Web3Module,AxiosModule,AuthModule,forwardRef(()=>BullMQModule)],
+  imports: [DBModule,Web3Module,WebSocketsModule, AxiosModule,AuthModule,forwardRef(()=>BullMQModule)],
   controllers: [TransactionsController],
   providers: [TransactionsService],
   exports: [TransactionsService]

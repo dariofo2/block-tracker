@@ -8,5 +8,6 @@ import { AuthModule } from 'src/auth/auth.module';
     AuthModule
   ],
   providers: [WebSocketsGateway, WebSocketsService],
+  exports: [WebSocketsGateway]
 })
 export class WebSocketsModule {}

@@ -35,9 +35,6 @@ export default function GraphGroupByAccountsAndTimeStamp() {
         }
 
     }, [graphData]);
-    /**
-     * Connect to WebSockets
-     */
 
     async function getGraphData() {
         const graphResponse = await AxiosTransactions.listGraphsAccounts(requestGraphsDTO);
@@ -113,7 +110,7 @@ export default function GraphGroupByAccountsAndTimeStamp() {
                                     return moment.unix(time as number).format("hh:mm:ss")
                                 },
                                 afterTitle: function (context) {
-                                    const valueTotal = (context[0].raw as any).valuetotal;
+                                    const valueTotal = (context[0].raw as any).totalvalue;
                                     return "Total Value: " + valueTotal;
                                 }
                             }

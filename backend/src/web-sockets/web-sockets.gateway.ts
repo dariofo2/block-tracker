@@ -1,4 +1,4 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WsException } from '@nestjs/websockets';
+import { WebSocketGateway, SubscribeMessage, MessageBody, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WsException, WebSocketServer } from '@nestjs/websockets';
 import { WebSocketsService } from './web-sockets.service';
 import { Socket, Server } from 'socket.io';
 import { AuthService } from 'src/auth/auth.service';
@@ -6,6 +6,7 @@ import { BadRequestException } from '@nestjs/common';
 
 @WebSocketGateway()
 export class WebSocketsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  @WebSocketServer() serverWS:Server;
   constructor(
     private readonly webSocketsService: WebSocketsService,
     private readonly authService: AuthService
@@ -20,6 +21,7 @@ export class WebSocketsGateway implements OnGatewayInit, OnGatewayConnection, On
     const cookies=client.handshake.headers.cookie;
     const jwtToken=cookies?.split("jwtToken=")[1].split(";")[0].replace("%20"," ");
 
+     console.log("cliente conectado");
     //Try to Auth JWT. If Error Disconnect Client
     try {
     await this.authService.checkManualAuth(jwtToken as string);
@@ -29,6 +31,7 @@ export class WebSocketsGateway implements OnGatewayInit, OnGatewayConnection, On
       client.disconnect();
     }
     
+   
     //If OK emit message Success
     client.emit("connection","Connected Succesfully");
   }
@@ -36,5 +39,9 @@ export class WebSocketsGateway implements OnGatewayInit, OnGatewayConnection, On
   async handleDisconnect(client: Socket) {
     client.emit("connection","Disconnected Succesfully");
     client.disconnect();
+  }
+
+  async refreshMessage () {
+    this.serverWS.emit("refresh","Refreshed Transactions");
   }
 }

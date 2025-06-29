@@ -16,6 +16,7 @@ import { ListAccountsLastBlockDTO } from '../accounts/dto/list-account-lastBlock
 import BullMQClientService from 'src/bullMQ/bullMQ.client.service';
 import listRequestGraphsDTO from 'src/database/dto/listRequestGraphs.dto';
 import { RequestListGroupByAccountAndTimeStamp } from './dto/list/requestListGroupByAccountAndTimeStamp.dto';
+import { WebSocketsGateway } from 'src/web-sockets/web-sockets.gateway';
 
 @Injectable()
 export class TransactionsService implements OnApplicationBootstrap {
@@ -26,7 +27,8 @@ export class TransactionsService implements OnApplicationBootstrap {
     private transactionsRepository: TransactionsRepository,
     private web3Service: Web3Service,
     private axiosService: AxiosService,
-    private bullMQClientService: BullMQClientService
+    private bullMQClientService: BullMQClientService,
+    private webSocketsGateWay: WebSocketsGateway
   ) { }
 
   async create(transactions: CreateTransactionDto | CreateTransactionDto[]) {
@@ -98,7 +100,8 @@ export class TransactionsService implements OnApplicationBootstrap {
     await this.bullMQClientService.waitUntilFinishedJobs();
     await this.transactionsRepository.deleteCache();
 
-    this.initializeAppRefreshTimeOut();
+    await this.initializeAppRefreshTimeOut();
+    await this.webSocketsGateWay.refreshMessage();
     console.log("finished");
   }
 
