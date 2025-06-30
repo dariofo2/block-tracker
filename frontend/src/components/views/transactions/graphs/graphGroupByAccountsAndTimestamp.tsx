@@ -12,9 +12,9 @@ import { useEffect, useRef, useState } from "react";
 
 export default function GraphGroupByAccountsAndTimeStamp() {
     const [graphData, setGraphData] = useState(null as listReponseGraphsDTO<ResponseListGroupByAccountAndTimeStamp> | null);
-    const [requestGraphsDTO, setRequestGraphsDTO] = useState({ data: { secondsFrom: 500, type: "seconds" } } as listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>);
     const [graph, setGraph] = useState(null as Chart | null);
-    let doOnce = false;
+    const secondsFrom=useRef(500);
+    const secondsFromInput=useRef(null as HTMLInputElement|null);
 
     useEffect(() => {
         getGraphData();
@@ -37,7 +37,14 @@ export default function GraphGroupByAccountsAndTimeStamp() {
     }, [graphData]);
 
     async function getGraphData() {
-        const graphResponse = await AxiosTransactions.listGraphsAccounts(requestGraphsDTO);
+        const graphRequest: listRequestGraphsDTO<RequestListGroupByAccountAndTimeStamp>={
+            data:{
+                type:"seconds",
+                secondsFrom:secondsFrom.current
+            }
+        }
+        console.log(graphRequest);
+        const graphResponse = await AxiosTransactions.listGraphsAccounts(graphRequest);
         setGraphData({ ...graphResponse });
     }
 
@@ -52,6 +59,11 @@ export default function GraphGroupByAccountsAndTimeStamp() {
         (graph as any).update("none")
     }
 
+    async function changeSecondsFrom () {
+        secondsFrom.current=parseInt(secondsFromInput.current?.value as string);
+        getGraphData();
+    }
+
     async function convertDataToChartJsData(responseListGroupByAccountAndTimeStamp: ResponseListGroupByAccountAndTimeStamp[]) {
         //Convert Data To Chart.js Data
         //const addressSet=new Set(responseListGroupByAccountAndTimeStamp.map(x=>x.address));
@@ -62,7 +74,7 @@ export default function GraphGroupByAccountsAndTimeStamp() {
             if (dataAddress) {
                 (data.get(x.address as string) as lineChartData<ResponseListGroupByAccountAndTimeStamp>).data?.push(x);
             } else {
-                data.set(x.address as string, { data: [x], label: x.address, tension: 0.2, pointRadius: 2 });
+                data.set(x.address as string, { data: [x], label: x.address, tension: 0.2, pointRadius: 5 });
             }
 
             return data;
@@ -126,6 +138,10 @@ export default function GraphGroupByAccountsAndTimeStamp() {
 
     return (
         <div>
+            <h2>Graph - Amount of Accounts Transactions in Seconds</h2>
+            <h4>Max Seconds</h4>
+            <input ref={secondsFromInput} type="number" defaultValue="500" placeholder="FromTime" />
+            <button className="btn btn-warning" onClick={changeSecondsFrom}>Filter</button>
             <canvas id="chart"></canvas>
             <SocketIoClient onUpdate={getGraphData}/>
         </div>

@@ -131,9 +131,9 @@ export class TransactionsRepository {
         const queryValue = `:${secondsFrom}`;
 
         const transactions = await this.dataSource.createQueryBuilder()
-            .select("acc.id as id, acc.address as address, date(from_unixtime(tr.date)) as date, tr.block as block, count(*) as totalcount, sum(cast(tr.value AS DECIMAL(20,8))) as totalvalue")
+            .select("acc.id as id, acc.address as address, UNIX_TIMESTAMP(date(from_unixtime(tr.date))) as date, tr.block as block, count(*) as totalcount, sum(cast(tr.value AS DECIMAL(20,8))) as totalvalue")
             .from(Transaction, "tr")
-            .leftJoin(Account, "acc", "acc.id=tr.accountId")
+            .leftJoin("tr.account", "acc")
             .where("tr.date>(unix_timestamp(now()) - :secondsFrom)", { secondsFrom: secondsFrom })
             .groupBy("acc.id,date(from_unixtime(tr.date))")
             .cache(queryName + queryValue, 100000)
@@ -165,7 +165,7 @@ export class TransactionsRepository {
         const queryValue = `:${secondsFrom}`;
 
         const transactions = await this.dataSource.createQueryBuilder()
-            .select("acc.id as id, acc.address as address, concat(year(from_unixtime(tr.date)),'-',month(from_unixtime(tr.date))) as date, tr.block as block, count(*) as totalcount, sum(cast(tr.value AS DECIMAL(20,8))) as totalvalue")
+            .select("acc.id as id, acc.address as address, UNIX_TIMESTAMP(concat(year(from_unixtime(tr.date)),'-',month(from_unixtime(tr.date)),'-01')) as date, tr.block as block, count(*) as totalcount, sum(cast(tr.value AS DECIMAL(20,8))) as totalvalue")
             .from(Transaction, "tr")
             .leftJoin(Account, "acc", "acc.id=tr.accountId")
             .where("tr.date>(unix_timestamp(now()) - :secondsFrom)", { secondsFrom: secondsFrom })
@@ -208,6 +208,7 @@ export class TransactionsRepository {
                 cacheToRemove.push(key + z);
             })
         })
+        console.log(cacheToRemove);
         await this.dataSource.queryResultCache?.remove(cacheToRemove)
         this.mapCache = new Map<string, Set<string>>;
     }
