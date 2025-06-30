@@ -245,7 +245,7 @@ export class TransactionsService implements OnApplicationBootstrap {
 
         }
       }
-
+      this.web3Service.getPriceUSDOfERC20Token("0xd0ec028a3d21533fdd200838f39c85b03679285d");
       console.log(createTransactions);
 
       // Save Transactions to DB

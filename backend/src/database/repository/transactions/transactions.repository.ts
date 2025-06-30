@@ -208,7 +208,6 @@ export class TransactionsRepository {
                 cacheToRemove.push(key + z);
             })
         })
-        console.log(cacheToRemove);
         await this.dataSource.queryResultCache?.remove(cacheToRemove)
         this.mapCache = new Map<string, Set<string>>;
     }

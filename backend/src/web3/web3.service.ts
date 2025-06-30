@@ -2,13 +2,18 @@ import { Injectable } from '@nestjs/common';
 import Web3, { Contract, ContractAbi } from 'web3';
 import * as erc20Json from "./abi/erc-20.json";
 import { ERC20Data } from './classes/erc-20-Data';
+import AxiosService from 'src/axios/axios.service';
 
 @Injectable()
 export class Web3Service {
     node = new Web3(process.env.ETH_INFURA_NODE);
     erc20Contract=new this.node.eth.Contract(erc20Json.abi);
     contractERC20DataMap= new Map<string,ERC20Data>;
+    contractERC20PriceUSD= new Map<string,number>;
 
+    constructor (
+        private axiosService : AxiosService
+    ) {}
     async decodeMethodDataERC20 (input:string) {
         const method=input.slice(0,10);
         const params="0x" + input.slice(10);
@@ -54,5 +59,17 @@ export class Web3Service {
         this.contractERC20DataMap.set(contractAddress,eRC20Data);
 
         return eRC20Data;
+    }
+
+    async getPriceUSDOfERC20Token(contractAddress: string) {
+        if (this.contractERC20PriceUSD.has(contractAddress)) {
+            return this.contractERC20PriceUSD.get(contractAddress) as number;
+        }
+        const response=await this.axiosService.getValueOfToken(contractAddress);
+        const priceEur= response[contractAddress]['eur'];
+
+        this.contractERC20PriceUSD.set(contractAddress,priceEur);
+        console.log(priceEur);
+        return priceEur;
     }
 }

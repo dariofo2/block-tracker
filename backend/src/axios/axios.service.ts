@@ -11,6 +11,9 @@ export default class AxiosService {
     etherscanURL = process.env.ETH_ETHERSCAN_URL as string;
     etherscanAPI_KEY= process.env.ETH_ETHERSCAN_API_KEY as string;
     
+    coingeckoTokenPriceURL= process.env.COINGECKO_TOKEN_PRICE_URL as string;
+    coingeckoApiKey= process.env.COINGECKO_API_KEY as string;
+
     constructor (
         private axios: HttpService
     ) {}
@@ -30,6 +33,31 @@ export default class AxiosService {
         )) 
 
         return transactions.data.result;
+        } catch (error) {
+            console.error(error);
+            return null;
+        }
+    }
+
+    /**
+     * Gets Value of Token Contract Address
+     * CoinGecko
+     */
+    async getValueOfToken (token: string ) {
+        try {
+        const transactions=await lastValueFrom (this.axios.get(
+            `${this.coingeckoTokenPriceURL}/ethereum`,
+            {
+                params: {
+                    contract_addresses: token,
+                    vs_currencies: "eur"
+                },
+                headers: {
+                    'x-cg-api-key': this.coingeckoApiKey
+                }
+            }
+        )) 
+        return transactions.data;
         } catch (error) {
             console.error(error);
             return null;
